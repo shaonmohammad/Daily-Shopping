@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home | Daily Shopping</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="static/images/online-shopping.png"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+            /* Global Base Styles */
+            body {
+
+              font-family: 'Poppins', sans-serif;
+              background: #e5e8ed;
+            }
+
+            .btn-gradient-primary {
+              background: linear-gradient(to right, #6a11cb, #2575fc);
+              border: none;
+              color: #fff;
+              padding: 0.5rem 1.5rem;
+              transition: transform 0.2s, box-shadow 0.3s;
+            }
+
+            .btn-gradient-primary:hover {
+              transform: scale(1.1);
+              box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+            }
+
+            .card.product-card {
+              background: #fff;
+              border-radius: 15px;
+              overflow: hidden;
+              transition: transform 0.3s, box-shadow 0.3s;
+            }
+
+            .card.product-card:hover {
+              transform: translateY(-10px);
+              box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            }
+
+            .image-container {
+              background: linear-gradient(to right, #f3e7e9, #e3eeff);
+              padding: 10px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+            }
+
+            .card-title {
+              font-size: 1.25rem;
+              color: #333;
+              font-weight: bold;
+              text-transform: capitalize;
+            }
+
+            .text-gradient {
+              background: linear-gradient(to right, #ff758c, #ff7eb3);
+              -webkit-background-clip: text;
+              color: transparent;
+            }
+
+            .item-title {
+              font-size: 2rem;
+              text-align: center;
+              margin-bottom: 1.5rem;
+            }
+
+            .buy-now-btn {
+              background: linear-gradient(to right, #00c6ff, #0072ff);
+              color: #fff;
+              border: none;
+              transition: transform 0.2s, box-shadow 0.3s;
+            }
+
+            .buy-now-btn:hover {
+              transform: scale(1.1);
+              box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+            }
+
+            .add-to-cart-btn{
+              background: linear-gradient(to right, #ff512f, #dd2476);
+              color: #fff;
+              border: none;
+              transition: transform 0.2s, box-shadow 0.3s;
+            }
+            .filter-btn{
+               background: linear-gradient(to right, #ff512f, #dd2476);
+              color: #fff;
+              border: none;
+              transition: transform 0.2s, box-shadow 0.3s;
+            }
+
+
+            .add-to-cart-btn:hover {
+              transform: scale(1.1);
+              box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+            .modal-header {
+        border-bottom: none;
+      }
+
+      {% comment %} .modal-footer {
+        border-top: none;
+      } {% endcomment %}
+
+      .modal-content {
+        border-radius: 15px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      }
+
+      .modal-body p {
+        font-size: 1.1rem;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  {% load static %}
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-lg">
+      <div class="container">
+        <a class="navbar-brand text-light fw-bold" href="{% url 'home' %}">
+          <img src="{% static 'images/online-shopping.png' %}" alt="Logo" style="width: 24px; height: 24px;">
+          E-Shop
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a
+                class="nav-link active text-light"
+                aria-current="page"
+                href="{% url 'home' %}"
+                >Home</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-light" href="#">Shop</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-light" href="#">Contact</a>
+            </li>
+          </ul>
+          <form class="d-flex me-3" action="{% url 'home' %}">
+            <input
+              class="form-control search-bar"
+              type="search"
+              name="q"
+              placeholder="Search"
+              aria-label="Search"
+            />
+            <button
+              style="border: 0.5px solid white; color: white"
+              class="btn"
+              type="submit"
+            >
+              <i class="fas fa-search search-icon"></i>
+            </button>
+          </form>
+          <div class="d-flex align-items-center">
+            <a
+              href="{% if user.is_authenticated %}{% url 'cart_list' %}{% else %}{% url 'login' %}{% endif %}"
+              class="text-light cart-icon mx-3 position-relative"
+              style="font-size: 1.5rem"
+            >
+              <img src="{% static 'images/carts.png' %}" alt="Logo" style="width: 30px; height: 30px;">
+              {% if total_cart > 0 %}
+              <span
+                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                style="font-size: 0.8rem"
+              >
+                {{ total_cart }}
+              </span>
+              {% endif %}
+            </a>
+            {% if user.is_authenticated %}
+            <span class="text-light me-3">
+               <img src="{% static 'images/user2.png' %}" alt="Logo" style="width: 30px; height: 30px;">
+            </span>
+            <!-- Logout Button -->
+            <a
+              href="#"
+              class="btn btn-outline-light rounded-pill"
+              data-bs-toggle="modal"
+              data-bs-target="#logoutModal"
+            >
+              <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+            {% else %}
+            <a
+              href="{% url 'login' %}"
+              class="btn btn-outline-light rounded-pill"
+            >
+              <i class="fas fa-sign-in-alt"></i> Login
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Logout Confirmation Modal -->
+    <div
+      class="modal fade"
+      id="logoutModal"
+      tabindex="-1"
+      aria-labelledby="logoutModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-light">
+            <h5 class="modal-title" id="logoutModalLabel">
+              <i class="fas fa-exclamation-circle me-2"></i>Confirm Logout
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body text-center">
+            <p>Are you sure you want to log out?</p>
+            <div class="d-flex justify-content-center">
+              <i
+                class="fas fa-question-circle fa-3x text-warning"
+                style="font-size: 3rem"
+              ></i>
+            </div>
+          </div>
+          <div class="modal-footer justify-content-center">
+            <button
+              type="button"
+              class="btn btn-secondary rounded-pill"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <a href="{% url 'logout' %}" class="btn btn-danger rounded-pill">
+              Confirm Logout
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% block content %}
+    
+    {% endblock %}
+    <!-- Footer -->
+    <footer class="bg-primary text-light pt-5 pb-4">
+      <div class="container">
+        <div class="row">
+          <!-- About Section -->
+          <div class="col-md-4">
+            <h5 class="text-uppercase fw-bold text-warning">About Us</h5>
+            <p>
+              E-Shop is your destination for premium products. Shop with
+              confidence and enjoy secure delivery.
+            </p>
+            <div class="social-links mt-3">
+              <a href="#" class="text-light me-3">
+                <i class="fab fa-facebook fa-lg"></i>
+              </a>
+              <a href="#" class="text-light me-3">
+                <i class="fab fa-twitter fa-lg"></i>
+              </a>
+              <a href="#" class="text-light me-3">
+                <i class="fab fa-instagram fa-lg"></i>
+              </a>
+              <a href="#" class="text-light">
+                <i class="fab fa-linkedin fa-lg"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Quick Links -->
+          <div class="col-md-4">
+            <h5 class="text-uppercase fw-bold text-warning">Quick Links</h5>
+            <ul class="list-unstyled">
+              <li>
+                <a href="#" class="text-light text-decoration-none">Home</a>
+              </li>
+              <li>
+                <a href="#" class="text-light text-decoration-none">Shop</a>
+              </li>
+              <li>
+                <a href="#" class="text-light text-decoration-none"
+                  >Categories</a
+                >
+              </li>
+              <li>
+                <a href="#" class="text-light text-decoration-none">Contact</a>
+              </li>
+              <li>
+                <a href="#" class="text-light text-decoration-none">FAQ</a>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Newsletter -->
+          <div class="col-md-4">
+            <h5 class="text-uppercase fw-bold text-warning">Newsletter</h5>
+            <p>Stay updated with the latest offers and deals!</p>
+            <form class="d-flex">
+              <input
+                type="email"
+                class="form-control me-2 rounded-pill"
+                placeholder="Your Email"
+              />
+              <button class="btn btn-warning rounded-pill">Subscribe</button>
+            </form>
+          </div>
+        </div>
+        <hr class="my-4 border-secondary" />
+        <div class="d-flex justify-content-between align-items-center">
+          <p class="mb-0">&copy; 2024 E-Shop. All Rights Reserved.</p>
+          <ul class="list-inline mb-0">
+            <li class="list-inline-item">
+              <a href="#" class="text-light">Privacy Policy</a>
+            </li>
+            <li class="list-inline-item">
+              <a href="#" class="text-light">Terms of Service</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

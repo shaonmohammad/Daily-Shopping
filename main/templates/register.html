@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+<div class="content-wrapper d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+  <div class="bg-image"></div>
+  <div class="card shadow p-4 mt-5 mb-5" style="width: 500px; border-radius: 15px; position: relative; z-index: 2;">
+    <div class="card-header text-center text-primary">
+      <h4>Register</h4>
+    </div>
+    <div class="card-body">
+      <!-- Error Message -->
+      {% if error %}
+      <div class="alert alert-danger text-center" role="alert">
+        {{ error }}
+      </div>
+      {% endif %}
+
+      <form method="post" action="{% url 'register' %}">
+        {% csrf_token %}
+        <!-- Email -->
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="form-control"
+            placeholder="Enter your email address"
+            value="{{ request.POST.email }}"
+            required
+          />
+        </div>
+        <!-- Password -->
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="form-control"
+            placeholder="Create a password"
+            required
+          />
+        </div>
+        <!-- Phone Number -->
+        <div class="mb-3">
+          <label for="phone_number" class="form-label">Phone Number</label>
+          <input
+            type="text"
+            id="phone_number"
+            name="phone_number"
+            class="form-control"
+            placeholder="Enter your phone number"
+            value="{{ request.POST.phone_number }}"
+          />
+        </div>
+        <!-- Address -->
+        <div class="mb-3">
+          <label for="address" class="form-label">Address</label>
+          <textarea
+            id="address"
+            name="address"
+            class="form-control"
+            rows="3"
+            placeholder="Enter your address"
+          >{{ request.POST.address }}</textarea>
+        </div>
+        <!-- Gender -->
+        <div class="mb-3">
+          <label for="gender" class="form-label">Gender</label>
+          <select id="gender" name="gender" class="form-select">
+            <option value="">Select your gender</option>
+            <option value="M" {% if request.POST.gender == "M" %}selected{% endif %}>Male</option>
+            <option value="F" {% if request.POST.gender == "F" %}selected{% endif %}>Female</option>
+            <option value="O" {% if request.POST.gender == "O" %}selected{% endif %}>Other</option>
+          </select>
+        </div>
+        <!-- Submit Button -->
+        <div class="d-grid">
+          <button type="submit" class="btn btn-primary">Register</button>
+        </div>
+      </form>
+    </div>
+    <div class="card-footer text-center">
+      <p class="mb-0">
+        Already have an account?
+        <a href="{% url 'login' %}" class="text-primary">Login</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<style>
+  .content-wrapper {
+    position: relative;
+   
+  }
+
+  /* Background for Block Content */
+  .bg-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("{% static 'images/login.jpg' %}");
+    background-size: cover;
+    background-position: center;
+    z-index: 1;
+    filter: blur(4px); /* Blur effect only for the background */
+  }
+
+</style>
+{% endblock %}
