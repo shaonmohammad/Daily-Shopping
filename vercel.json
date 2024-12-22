@@ -1,13 +1,21 @@
 {
-    "builds": [{
-        "src": "online_shop/wsgi.py",
-        "use": "@vercel/python",
-        "config": { "maxLambdaSize": "15mb", "runtime": "python3.10" }
-    }],
+    "builds": [
+        {
+            "src": "online_shop/wsgi.py",
+            "use": "@vercel/python",
+            "config": {
+                "maxLambdaSize": "15mb",
+                "runtime": "python3.10"
+            }
+        }
+    ],
     "routes": [
         {
             "src": "/(.*)",
             "dest": "online_shop/wsgi.py"
         }
-    ]
+    ],
+    "build": {
+        "commands": ["python manage.py collectstatic --noinput"]
+    }
 }
