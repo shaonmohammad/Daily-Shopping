@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 import os
 from pathlib import Path
 import cloudinary_storage
+from decouple import config 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 # BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,11 +24,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-i9iul*qg-bg@qe(ton8pvlcw-rj8%+8_p*930vyr$q_(*5$-o_'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
-DEBUG = False
+DEBUG = config('DEBUG', default=False, cast=bool)
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='.vercel.app,127.0.0.1,.now.sh').split(',')
+
 
 ALLOWED_HOSTS = ['.vercel.app','127.0.0.1','.now.sh']
 # ALLOWED_HOSTS = []
@@ -92,15 +95,15 @@ WSGI_APPLICATION = 'online_shop.wsgi.application'
 #     }
 # }
 
-# postgresql://postgres:rdOSXaMqfijUisGgDAEEiahLEWyqrpeD@autorack.proxy.rlwy.net:20726/railway
+# Database configuration
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'railway',
-        'USER': 'postgres',
-        'PASSWORD': 'rdOSXaMqfijUisGgDAEEiahLEWyqrpeD',
-        'HOST': 'autorack.proxy.rlwy.net',  # e.g., 'localhost' or cloud host
-        'PORT': '20726',  # Default MySQL port
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
+        'PORT': config('DB_PORT'),
     }
 }
 
@@ -154,17 +157,17 @@ DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# settings.py
 
+# SSLCOMMERZ settings
 SSLCOMMERZ = {
-    'store_id': 'abc675ef7b7c0d0c',
-    'store_password': 'abc675ef7b7c0d0c@ssl',
-    'sandbox': True,  # Use False for production
+    'store_id': config('SSLCOMMERZ_STORE_ID'),
+    'store_password': config('SSLCOMMERZ_STORE_PASSWORD'),
+    'sandbox': config('SSLCOMMERZ_SANDBOX', default=True, cast=bool),
 }
 
-
+# Cloudinary configuration
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'df0ox2fhr',
-    'API_KEY': '325782452399194',
-    'API_SECRET': 'VnMxcXsitZY0aiRdtnffVAXXrC8'
+    'CLOUD_NAME': config('CLOUD_NAME'),
+    'API_KEY': config('API_KEY'),
+    'API_SECRET': config('API_SECRET'),
 }
