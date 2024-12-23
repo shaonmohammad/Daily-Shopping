@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
 from pathlib import Path
+import cloudinary_storage
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 # BASE_DIR = Path(__file__).resolve().parent.parent
@@ -42,6 +43,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary',
+    'cloudinary_storage',
     'main',
 ]
 
@@ -142,8 +145,8 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build','static')
 
 # Media files (Uploaded files like images)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/' 
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
@@ -157,4 +160,11 @@ SSLCOMMERZ = {
     'store_id': 'abc675ef7b7c0d0c',
     'store_password': 'abc675ef7b7c0d0c@ssl',
     'sandbox': True,  # Use False for production
+}
+
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'df0ox2fhr',
+    'API_KEY': '325782452399194',
+    'API_SECRET': 'VnMxcXsitZY0aiRdtnffVAXXrC8'
 }
