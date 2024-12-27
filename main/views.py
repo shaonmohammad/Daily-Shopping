@@ -142,18 +142,23 @@ def register_view(request):
 
 
 def cart_list_view(request):
-    cartlist = AddToCart.objects.filter(
+    product_id = request.GET.get('product_id')
+    if product_id:
+        product = Product.objects.get(id=product_id)
+        cartlist,created = AddToCart.objects.get_or_create(customer=request.user.customer,product=product)
+        total_price = product.price
+        total_cart = 1
+    else:
+        cartlist = AddToCart.objects.filter(
         customer=request.user.customer).select_related('product')
-
-    total_cart = 0
-    total_price = 0
-
-    if request.user.is_authenticated:
+        total_price = 0
         total_cart = cartlist.count()
-        total_price = sum(item.product.price * item.quantity for item in cartlist)
-    
+
+        if request.user.is_authenticated:
+            total_price = sum(item.product.price * item.quantity for item in cartlist)
+        
     context =  {
-        'cart_items': cartlist,
+        'cart_items': [cartlist] if product_id else cartlist,
         'total_cart': total_cart,
         'total_price':total_price
         }

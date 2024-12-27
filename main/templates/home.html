@@ -64,15 +64,21 @@
               <button class="btn btn-sm btn-primary add-to-cart-btn" onclick="handleAddToCart({{ product.id }})">
                 <i class="fas fa-cart-plus"></i> Add to Cart
               </button>
+
+              <button class="btn btn-sm btn-success buy-now-btn" onclick="window.location.href='{% url 'cart_list' %}?product_id={{product.id}}'">
+                <i class="fas fa-credit-card"></i> Buy Now
+              </button>
               {% else %}
               <button class="btn btn-sm btn-primary add-to-cart-btn" onclick="window.location.href='{% url 'login' %}'">
                 <i class="fas fa-cart-plus"></i> Add to Cart
               </button>
-              {% endif %}
 
               <button class="btn btn-sm btn-success buy-now-btn" onclick="window.location.href='{% url 'login' %}'">
                 <i class="fas fa-credit-card"></i> Buy Now
               </button>
+              {% endif %}
+
+             
             </div>
           </div>
       
