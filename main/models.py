@@ -66,3 +66,4 @@ class AddToCart(models.Model):
         verbose_name = 'Cart Item'
         verbose_name_plural = 'Cart Items'
         unique_together = ('customer', 'product')
+

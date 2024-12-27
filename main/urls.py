@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import home_view, login_view, register_view, logout_view, cart_list_view, add_to_cart, product_details_view,remove_cart_item
+from .views import home_view, login_view, register_view, logout_view, cart_list_view, add_to_cart, product_details_view,remove_cart_item,initiate_payment,payment_success,payment_ipn,payment_cancel,payment_fail
 urlpatterns = [
     path('', home_view, name='home'),
     path('product/<int:product_id>', product_details_view, name="product-details"),
@@ -11,9 +11,9 @@ urlpatterns = [
     path("remove-cart-item/", remove_cart_item, name="remove_cart_item"),
     
     # url for ssl payment method
-    # path('checkout/', initiate_payment, name='initiate_payment'),
-    # path('payment/success/', payment_success, name='payment_success'),
-    # path('payment/fail/', payment_fail, name='payment_fail'),
-    # path('payment/cancel/', payment_cancel, name='payment_cancel'),
-    # path('payment/ipn/', payment_ipn, name='payment_ipn'), 
+    path('checkout/', initiate_payment, name='initiate_payment'),
+    path('payment/success/', payment_success, name='payment_success'),
+    path('payment/fail/', payment_fail, name='payment_fail'),
+    path('payment/cancel/', payment_cancel, name='payment_cancel'),
+    path('payment/ipn/', payment_ipn, name='payment_ipn'), 
 ]

@@ -33,7 +33,7 @@
               <a href="javascript:void(0);" 
                  class="btn btn-danger btn-sm remove-item-btn" 
                  data-item-id="{{ item.id }}">
-                 <i class="fas fa-trash-alt"></i> Remove
+                 <i class="fas fa-trash-alt"></i>
               </a>
             </div>
           </div>
@@ -54,9 +54,12 @@
           <p class="card-text">
             Total Price: <strong>{{ total_price|floatformat:0 }}৳</strong>
           </p>
-          <a href="" class="btn btn-success w-100 mt-3">
-            Proceed to Checkout
-          </a>
+          <form method="POST" action="{% url 'initiate_payment' %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-success w-100 mt-3">
+                  Proceed to Checkout
+              </button>
+          </form>
         </div>
       </div>
     </div>

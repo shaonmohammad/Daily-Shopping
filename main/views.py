@@ -10,10 +10,11 @@ from django.db.models import Q
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Sum
 from django.http import JsonResponse
-# from sslcommerz  import SSLCSession
-# from decimal import Decimal
-# from django.urls import reverse
-# from django.conf import settings
+from sslcommerz_lib  import SSLCOMMERZ
+from decimal import Decimal
+from django.urls import reverse
+from django.conf import settings
+import datetime
 
 def home_view(request):
     categories = Category.objects.prefetch_related('products')
@@ -205,70 +206,77 @@ def remove_cart_item(request):
             return JsonResponse({"success": False, "message": str(e)})
     return JsonResponse({"success": False, "message": "Invalid request."})
 
+def initiate_payment(request):
+    if request.method == 'POST':
+        try:
+            # Fetch cart items and calculate total price
+            cart_items = AddToCart.objects.filter(customer=request.user.customer)
+            if not cart_items.exists():
+                return JsonResponse({'error': 'Cart is empty'}, status=400)
 
-# Implementation of Payment method SSL Commerz
-# def initiate_payment(request):
-#     if request.method == 'POST':
-#         # Fetch cart items and calculate total price
-#         cart_items = AddToCart.objects.filter(customer=request.user.customer)
-#         total_amount = sum(item.product.price * item.quantity for item in cart_items)
+            total_amount = sum(item.product.price * item.quantity for item in cart_items)
 
-#         # SSLCommerz payment initialization
-#         sslcz = SSLCSession(
-#             sslc_is_sandbox=settings.SSLCOMMERZ['sandbox'], 
-#             sslc_store_id=settings.SSLCOMMERZ['store_id'], 
-#             sslc_store_pass=settings.SSLCOMMERZ['store_password']
-#         )
-#         sslcz.set_urls(
-#             success_url=request.build_absolute_uri(reverse('payment_success')),
-#             fail_url=request.build_absolute_uri(reverse('payment_fail')),
-#             cancel_url=request.build_absolute_uri(reverse('payment_cancel')),
-#             ipn_url=request.build_absolute_uri(reverse('payment_ipn')),
-#         )
-#         sslcz.set_product_integration(
-#             total_amount=Decimal(total_amount),
-#             currency="BDT",
-#             product_category="Shopping",
-#             product_name="Shopping Cart Items",
-#             num_of_item=len(cart_items),
-#             shipping_method="Courier",
-#             product_profile="general",
-#         )
-#         sslcz.set_customer_info(
-#             name=request.user.username,
-#             email=request.user.email,
-#             address=request.user.customer.address,
-#             city="Dhaka",
-#             postcode="1212",
-#             country="Bangladesh",
-#             phone=request.user.customer.phone_number,
-#         )
-#         sslcz.set_shipping_info(
-#             shipping_to=request.user.username,
-#             address=request.user.customer.address,
-#             city="Dhaka",
-#             postcode="1212",
-#             country="Bangladesh",
-#         )
+            settings_data = {
+                'store_id': settings.SSLCOMMERZ['store_id'],
+                'store_pass': settings.SSLCOMMERZ['store_password'],
+                'issandbox': settings.SSLCOMMERZ['sandbox']
+            }
 
-#         # Create the session
-#         response_data = sslcz.init_payment()
-#         return redirect(response_data['GatewayPageURL'])
-#     return JsonResponse({'error': 'Invalid request'}, status=400)
+            sslcz = SSLCOMMERZ(settings_data)
+            post_body = {}
+            post_body['total_amount'] = total_amount
+            post_body['currency'] = "BDT"
+            post_body['tran_id'] = f"TRANSACTION_{str(request.user.id)}_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+            post_body['success_url'] = request.build_absolute_uri(reverse('payment_success'))
+            post_body['fail_url'] = request.build_absolute_uri(reverse('payment_fail'))
+            post_body['cancel_url'] = request.build_absolute_uri(reverse('payment_cancel'))
+            post_body['ipn_url'] = request.build_absolute_uri(reverse('payment_ipn'))
+            post_body['cus_name'] = request.user.username
+            post_body['cus_email'] = request.user.email
+            post_body['cus_add1'] = request.user.customer.address
+            post_body['cus_city'] = "Dhaka"
+            post_body['cus_postcode'] = "1212"
+            post_body['cus_country'] = "Bangladesh"
+            post_body['cus_phone'] = request.user.customer.phone_number or "123"
+            post_body['shipping_method'] = "NO"
+            post_body['product_name'] = "Shopping Cart Items"
+            post_body['product_category'] = "Shopping"
+            post_body['product_profile'] = "general"
 
-# def payment_success(request):
-#     return JsonResponse({'status': 'success', 'message': 'Payment completed successfully!'})
+            response = sslcz.createSession(post_body)
+            print(response)
+            if response['status'] == 'SUCCESS':
+                return redirect(response['GatewayPageURL'])
+            else:
+                return JsonResponse({'error': 'Payment initialization failed'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
 
-# def payment_fail(request):
-#     return JsonResponse({'status': 'fail', 'message': 'Payment failed. Please try again.'})
+@csrf_exempt
+def payment_success(request):
+    if request.method == 'POST':
+        # Verify the payment status
+        payment_data = request.POST
+        if 'status' in payment_data and payment_data['status'] == 'VALID':
+            # Update your order status here
+            return JsonResponse({'status': 'success', 'message': 'Payment completed successfully!'})
+    return redirect('order_complete')  # Redirect to an order complete page
 
-# def payment_cancel(request):
-#     return JsonResponse({'status': 'cancel', 'message': 'Payment cancelled by the user.'})
+@csrf_exempt
+def payment_fail(request):
+    return redirect('cart_list')  # Redirect back to cart page
 
-# def payment_ipn(request):
-#     # Handle SSLCommerz IPN (Instant Payment Notification)
-#     if request.method == 'POST':
-#         data = request.POST
-#         # Verify payment status and update order/payment status
-#         return JsonResponse({'status': 'received', 'message': 'IPN received.'})
-#     return JsonResponse({'error': 'Invalid request'}, status=400)
+@csrf_exempt
+def payment_cancel(request):
+    return redirect('cart_list')  # Redirect back to cart page
+
+@csrf_exempt
+def payment_ipn(request):
+    if request.method == 'POST':
+        payment_data = request.POST
+        if 'status' in payment_data:
+            # Verify payment with SSLCommerz
+            # Update order status accordingly
+            return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'failed'}, status=400)
