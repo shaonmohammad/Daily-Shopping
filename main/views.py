@@ -119,7 +119,7 @@ def register_view(request):
         try:
             # Create user
             username = email.split('@')[0]
-            user = User.objects.create(username=username)
+            user = User.objects.create(username=username,email=email)
             user.set_password(password)
             user.username = username
             user.save()
