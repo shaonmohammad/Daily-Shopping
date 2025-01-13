@@ -54,7 +54,7 @@
           <p class="card-text">
             Total Price: <strong>{{ total_price|floatformat:0 }}৳</strong>
           </p>
-          <form method="POST" action="{% url 'initiate_payment' %}">
+            <form method="POST" action="{% if single_cart_id %}{% url 'initiate_payment' %}?product_id={{ single_cart_id }}{% else %}{% url 'initiate_payment' %}{% endif %}">
               {% csrf_token %}
               <button type="submit" class="btn btn-success w-100 mt-3">
                   Proceed to Checkout

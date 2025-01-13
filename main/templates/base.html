@@ -199,9 +199,11 @@
               {% endif %}
             </a>
             {% if user.is_authenticated %}
-            <span class="text-light me-3">
-               <img src="{% static 'images/user2.png' %}" alt="Logo" style="width: 30px; height: 30px;">
-            </span>
+            <a
+              href="{% url 'my_orders' %}"
+              class="btn btn-outline-light rounded-pill mx-1">
+              My Orders
+            </a>
             <!-- Logout Button -->
             <a
               href="#"

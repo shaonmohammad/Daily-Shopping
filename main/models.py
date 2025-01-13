@@ -67,3 +67,8 @@ class AddToCart(models.Model):
         verbose_name_plural = 'Cart Items'
         unique_together = ('customer', 'product')
 
+class Order(models.Model):
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
+    product = models.ForeignKey(Product,on_delete=models.CASCADE)
+    order_date = models.DateField(auto_now_add=True)
+

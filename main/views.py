@@ -1,6 +1,8 @@
 import json
+import re
+from urllib.parse import urlencode
 from django.shortcuts import render, redirect
-from .models import Product, Category, Customer, AddToCart
+from .models import Product, Category, Customer, AddToCart,Order
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
@@ -15,6 +17,7 @@ from decimal import Decimal
 from django.urls import reverse
 from django.conf import settings
 import datetime
+from django.core.cache import cache
 
 def home_view(request):
     categories = Category.objects.prefetch_related('products')
@@ -146,6 +149,7 @@ def cart_list_view(request):
     if product_id:
         product = Product.objects.get(id=product_id)
         cartlist,created = AddToCart.objects.get_or_create(customer=request.user.customer,product=product)
+        print("Clcik buy now button,cart id is",cartlist.id)
         total_price = product.price
         total_cart = 1
     else:
@@ -160,7 +164,8 @@ def cart_list_view(request):
     context =  {
         'cart_items': [cartlist] if product_id else cartlist,
         'total_cart': total_cart,
-        'total_price':total_price
+        'total_price':total_price,
+        'single_cart_id':product_id if product_id else ''
         }
     return render(request, 'cartlist.html',context)
 
@@ -216,23 +221,32 @@ def initiate_payment(request):
         try:
             # Fetch cart items and calculate total price
             cart_items = AddToCart.objects.filter(customer=request.user.customer)
-            if not cart_items.exists():
-                return JsonResponse({'error': 'Cart is empty'}, status=400)
-
             total_amount = sum(item.product.price * item.quantity for item in cart_items)
+            
+            product_id = request.GET.get('product_id')  # if checkout for single product with buy now button
 
+            if product_id:
+                atc_id = AddToCart.objects.get(customer=request.user.customer,product_id=product_id)
+                cart_id = [atc_id.id]
+            else:
+                cart_id = [product.id for product in cart_items]
+            
             settings_data = {
                 'store_id': settings.SSLCOMMERZ['store_id'],
                 'store_pass': settings.SSLCOMMERZ['store_password'],
                 'issandbox': settings.SSLCOMMERZ['sandbox']
-            }
-
+            }     
             sslcz = SSLCOMMERZ(settings_data)
             post_body = {}
             post_body['total_amount'] = total_amount
             post_body['currency'] = "BDT"
             post_body['tran_id'] = f"TRANSACTION_{str(request.user.id)}_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
-            post_body['success_url'] = request.build_absolute_uri(reverse('payment_success'))
+            # Generate the query parameters
+            query_params = urlencode({
+                'cart_id': cart_id,
+                'user_id': request.user.id
+            })
+            post_body['success_url'] = f"{request.build_absolute_uri(reverse('payment_success'))}?{query_params}"
             post_body['fail_url'] = request.build_absolute_uri(reverse('payment_fail'))
             post_body['cancel_url'] = request.build_absolute_uri(reverse('payment_cancel'))
             post_body['ipn_url'] = request.build_absolute_uri(reverse('payment_ipn'))
@@ -258,14 +272,29 @@ def initiate_payment(request):
             return JsonResponse({'error': str(e)}, status=400)
     return JsonResponse({'error': 'Invalid request method'}, status=400)
 
-@csrf_exempt
+@csrf_exempt    
 def payment_success(request):
+    print(request)
     if request.method == 'POST':
         # Verify the payment status
         payment_data = request.POST
         if 'status' in payment_data and payment_data['status'] == 'VALID':
             # Update your order status here
-            return JsonResponse({'status': 'success', 'message': 'Payment completed successfully!'})
+            get_cart_id = request.GET.get('cart_id')
+            user_id = request.GET.get('user_id')
+            print(get_cart_id,"this is cart id")
+            cart_id = list(map(int, re.findall(r'\d+', get_cart_id)))
+            print(cart_id)
+            
+            # Create Order
+            for cart_id in cart_id:
+                try:
+                    cart_item = AddToCart.objects.get(id=cart_id)
+                    Order.objects.create(user_id=int(user_id), product=cart_item.product)
+                except AddToCart.DoesNotExist:
+                    print(f"Cart item with ID {cart_id} does not exist.")
+
+            return redirect('my_orders')
     return redirect('order_complete')  # Redirect to an order complete page
 
 @csrf_exempt
@@ -276,6 +305,8 @@ def payment_fail(request):
 def payment_cancel(request):
     return redirect('cart_list')  # Redirect back to cart page
 
+
+
 @csrf_exempt
 def payment_ipn(request):
     if request.method == 'POST':
@@ -285,3 +316,7 @@ def payment_ipn(request):
             # Update order status accordingly
             return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'failed'}, status=400)
+
+def my_orders(request):
+    orders = Order.objects.filter(user=request.user).order_by('-id') or None
+    return render(request,'my_orders.html',{"orders":orders})
