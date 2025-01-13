@@ -18,6 +18,7 @@ from django.urls import reverse
 from django.conf import settings
 import datetime
 from django.core.cache import cache
+from .tasks import send_notification_mail
 
 def home_view(request):
     categories = Category.objects.prefetch_related('products')
@@ -282,6 +283,7 @@ def payment_success(request):
             # Update your order status here
             get_cart_id = request.GET.get('cart_id')
             user_id = request.GET.get('user_id')
+            user = User.objects.get(id=int(user_id))
             print(get_cart_id,"this is cart id")
             cart_id = list(map(int, re.findall(r'\d+', get_cart_id)))
             print(cart_id)
@@ -293,7 +295,8 @@ def payment_success(request):
                     Order.objects.create(user_id=int(user_id), product=cart_item.product)
                 except AddToCart.DoesNotExist:
                     print(f"Cart item with ID {cart_id} does not exist.")
-
+            # Call it like this
+            send_notification_mail(user.email)
             return redirect('my_orders')
     return redirect('order_complete')  # Redirect to an order complete page
 

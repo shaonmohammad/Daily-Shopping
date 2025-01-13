@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'cloudinary',
     'cloudinary_storage',
     'main',
+    # "django-celery-results"
 ]
 
 MIDDLEWARE = [
@@ -182,3 +183,25 @@ CLOUDINARY_STORAGE = {
     'API_KEY': config('API_KEY'),
     'API_SECRET': config('API_SECRET'),
 }
+
+
+#settings.py
+
+# CELERY SETTINGS
+# CELERY_BROKER_URL = 'django-db://'
+# CELERY_RESULT_BACKEND = 'django-db'
+# CELERY_CACHE_BACKEND = 'django-cache'
+# CELERY_ACCEPT_CONTENT = ['application/json']
+# CELERY_TASK_SERIALIZER = 'json'
+# CELERY_RESULT_SERIALIZER = 'json'
+# CELERY_TIMEZONE = 'Europe/Paris'
+
+# AWS Credentials
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_BACKEND = "django_ses.SESBackend"
+AWS_SES_REGION_NAME = config('AWS_SES_REGION_NAME')
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_PORT = config('EMAIL_PORT', cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool, default=True)
