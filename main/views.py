@@ -295,8 +295,13 @@ def payment_success(request):
                     Order.objects.create(user_id=int(user_id), product=cart_item.product)
                 except AddToCart.DoesNotExist:
                     print(f"Cart item with ID {cart_id} does not exist.")
+            
             # Call it like this
-            send_notification_mail(user.email)
+            try:
+                send_notification_mail(user.email)
+            except Exception as e:
+                print("This customer email is not verified from AWS SES")
+
             return redirect('my_orders')
     return redirect('order_complete')  # Redirect to an order complete page
 
